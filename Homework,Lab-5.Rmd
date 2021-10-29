@@ -1,0 +1,202 @@
+---
+title: "Homework ,Lab-5"
+author: "Thakur Prasad Ghimire"
+date: "10/21/2021"
+output: word_document
+---
+
+Study group
+
+Thakur Prasad Ghimire
+Hassan Fayyaz
+
+
+
+```{r setup}
+knitr::opts_chunk$set(cache=TRUE)
+
+rm(list=ls(all=TRUE))
+library(dplyr)
+library(AER)
+library(class)
+library(stargazer)
+library(caret)
+library(ggplot2)
+
+```
+
+
+```{r}
+load("C:/Homework EcoB2000/Homework,Lab-5/acs2017_ny_data.RData")
+
+attach(acs2017_ny)
+use_varb <- (AGE >= 25) & (AGE <= 65) & (LABFORCE == 2) & (WKSWORK2 > 4) & (UHRSWORK >= 35) & (Hispanic == 1) & (female == 1) & ((educ_college == 1) | (educ_advdeg == 1))
+dat_use <- subset(acs2017_ny,use_varb)  
+
+```
+
+Model 1 shows the linear regression of income wages based on education level,  age, and ethnicity.
+
+```{r}
+model1 <- lm(INCWAGE ~ AGE + educ_hs + educ_college + educ_advdeg + white + AfAm + Hispanic+Asian,data=dat_use)
+summary(model1)
+
+```
+
+
+```{r}
+stargazer(model1,type="text")
+
+```
+
+```{r}
+attach(dat_use)
+NNobs <- length(INCWAGE)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dat_use,graph_obs)  
+plot(INCWAGE ~ AGE, pch = 20, col = rgb(0.5, 0.5, 0.8, alpha = 0.5), ylim = c(0,200000), data = dat_graph)
+to_be_predicted1 <- data.frame(AGE = 25:65, female = 1,white = 1, Hispanic = 0, AfAm =0,Asian=0, educ_hs = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted1$yhat <- predict(model1, newdata = to_be_predicted1)
+
+lines(yhat ~ AGE, data = to_be_predicted1)
+```
+
+The linear regression of income earnings depending on education level, age, age squared, and ethnicity is depicted in model 2.
+
+```{r}
+
+model2 <- lm(INCWAGE ~ AGE + I(AGE^2) + educ_hs + educ_college + educ_advdeg + white + AfAm + Hispanic+Asian,data=dat_use)
+summary(model2)
+
+
+```
+
+
+```{r}
+stargazer(model2, type = "text")
+
+```
+```{r}
+NNobs <- length(INCWAGE)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dat_use,graph_obs)  
+
+plot(INCWAGE ~ AGE, pch = 20, col = rgb(0.5, 0.5, 0.8, alpha = 0.5), ylim = c(0,200000), data = dat_graph)
+
+to_be_predicted2 <- data.frame(AGE = 25:65, female = 1, white = 1, Hispanic = 0, AfAm = 0,Asian=0,educ_hs = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted2$yhat <- predict(model2, newdata = to_be_predicted2)
+
+lines(yhat ~ AGE, data = to_be_predicted2)
+
+
+```
+
+Model 3 depicts the linear regression of income earnings depending on educational attainment as well as other variables such as race, gender, and ethnicity.
+```{r}
+
+model3 <- lm(INCWAGE ~ log(AGE) + I(log(AGE^2)) + educ_hs + educ_college + educ_advdeg + white + AfAm + Hispanic+Asian,data=dat_use)
+summary(model3)
+
+
+```
+
+```{r}
+stargazer(model3, type = "text")
+
+```
+```{r}
+
+attach(dat_use)
+NNobs <- length(INCWAGE)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dat_use,graph_obs)  
+
+plot(INCWAGE ~ (AGE), pch = 20, col = rgb(0.5, 0.5, 0.8, alpha = 0.5), ylim = c(0,200000), data = dat_graph)
+
+to_be_predicted3 <- data.frame(AGE = 25:65, female = 1, white = 1, Hispanic =0, AfAm = 0,Asian=0,educ_hs = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted3$yhat <- predict(model3, newdata = to_be_predicted3)
+lines(yhat ~ AGE, data = to_be_predicted3)
+
+```
+
+Model 4 depicts a linear regression of income salaries depending on educational attainment, age, age polynomials (Ageexp 2,3,4), and ethnicity.
+```{r}
+
+
+model4 <- lm(INCWAGE ~ AGE + I(AGE^2) + I(AGE^3) + I(AGE^4) +I(AGE^5) + I(AGE^6) + educ_hs + educ_college+ educ_advdeg + white + AfAm + Hispanic+Asian,data=dat_use)
+
+summary(model4)
+```
+```{r}
+stargazer(model4, type = "text")
+
+```
+
+
+```{r}
+
+attach(dat_use)
+NNobs <- length(INCWAGE)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dat_use,graph_obs)  
+
+plot(INCWAGE ~ (AGE), pch = 20, col = rgb(0.5, 0.5, 0.8, alpha = 0.2), ylim = c(0,200000), data = dat_graph)
+to_be_predicted4 <- data.frame(AGE = 25:65, female = 1, white = 1, Hispanic =0, AfAm = 0,Asian=0,educ_hs = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted4$yhat <- predict(model4, newdata = to_be_predicted4)
+
+lines(yhat ~ AGE, data = to_be_predicted4)
+
+
+```
+Model 4 builds on the conditions of Model 2, but this time the regression model incorporates age as a polynomial component with varying exponents (2,3,4). Using age as polynomials in the projected analysis reveals that as one gets older AGE to AGE^2 earnings  also rise after then start to decline.
+
+```{r}
+
+model5 <- lm(log1p(INCWAGE) ~ AGE + I(AGE^2) + I(AGE^3) + I(AGE^4) + educ_hs + educ_college + educ_advdeg + white + AfAm + Hispanic+Asian,data=dat_use)
+summary(model5)
+
+```
+
+```{r}
+stargazer(model5, type = "text")
+
+
+```
+
+
+
+
+```{r echo=TRUE, message=TRUE, warning=FALSE}
+NNobs <- length(INCWAGE)
+set.seed(12345)
+graph_obs <- (runif(NNobs) < 0.1)
+dat_graph <-subset(dat_use,graph_obs)  
+plot(INCWAGE ~ (AGE), pch = 20, col = rgb(0.5, 0.5, 0.8, alpha = 0.2), ylim = c(0,20000000), data = dat_graph)
+to_be_predicted5 <- data.frame(AGE = 25:65, female = 1, white = 1, Hispanic =0, AfAm = 0,Asian=0,educ_hs = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted5$yhat <- predict(model5, newdata = to_be_predicted5)
+
+lines(yhat ~ AGE, data = to_be_predicted5)
+
+```
+Model 5 expands on the conditions of model 2 but this time, the regression model is based on log of income wages which is the dependent variable. The table below demonstrates the estimates for the coefficient variables for all the models that were run above (Models 1-5).
+
+```{r}
+stargazer(model1, model2, model3, model4, model5, type = "text")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
